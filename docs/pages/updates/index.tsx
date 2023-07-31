@@ -677,12 +677,6 @@ export default function WhatsNew() {
           To deliver a more productive editor experience that's aligned with the needs and brand of
           your organisation.
         </Box>
-        <Timeline date="29th July 2021" />
-        <Box link="/docs/config/config#health-check" heading="New Health Check endpoint">
-          We've added an optional <InlineCode>/_healthcheck</InlineCode> endpoint to Keystone's
-          express server. Use it to ensure your Keystone instance is up and running with website
-          monitoring solutions.
-        </Box>
         <Timeline date="10th July 2021" />
         <Box heading="Watch Jed's Prisma Day workshop">
           <div

@@ -210,7 +210,7 @@ export default config({
 
 ### extendExpressApp
 
-This lets you modify the express app that Keystone creates _before_ the Apollo Server and Admin UI Middleware are added to it (but after the `cors` and `healthcheck` options are applied).
+This functions passes you the `express.Router` _before_ the Apollo Server and Admin UI Middleware is applied (but after `cors` and our expresss configuration).
 
 The function is passed two arguments:
 

@@ -10,7 +10,6 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 // @ts-ignore
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 import type { KeystoneConfig, KeystoneContext, GraphQLConfig } from '../../types';
-import { addHealthCheck } from './addHealthCheck';
 
 /*
 NOTE: This creates the main Keystone express server, including the
@@ -64,8 +63,6 @@ export const createExpressServer = async (
         : config.server.cors;
     expressServer.use(cors(corsConfig));
   }
-
-  addHealthCheck({ config, server: expressServer });
 
   if (config.server?.extendExpressApp) {
     await config.server.extendExpressApp(expressServer, context);
