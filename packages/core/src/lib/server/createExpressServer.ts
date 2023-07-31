@@ -7,21 +7,13 @@ import type { GraphQLFormattedError, GraphQLSchema } from 'graphql';
 import { ApolloServer, ApolloServerOptions } from '@apollo/server';
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
-// @ts-ignore
+// @ts-expect-error
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 import type { KeystoneConfig, KeystoneContext, GraphQLConfig } from '../../types';
 
-/*
-NOTE: This creates the main Keystone express server, including the
-GraphQL API, but does NOT add the Admin UI middleware.
-
-The Admin UI takes a while to build for dev, and is created separately
-so the CLI can bring up the dev server early to handle GraphQL requests.
-*/
-
 const DEFAULT_MAX_FILE_SIZE = 200 * 1024 * 1024; // 200 MiB
 
-const formatError = (graphqlConfig: GraphQLConfig | undefined) => {
+function formatError (graphqlConfig: GraphQLConfig | undefined) {
   return (formattedError: GraphQLFormattedError, error: unknown) => {
     let debug = graphqlConfig?.debug;
     if (debug === undefined) {
@@ -42,7 +34,7 @@ const formatError = (graphqlConfig: GraphQLConfig | undefined) => {
   };
 };
 
-export const createExpressServer = async (
+export async function createExpressServer (
   config: KeystoneConfig,
   graphQLSchema: GraphQLSchema,
   context: KeystoneContext
@@ -50,9 +42,9 @@ export const createExpressServer = async (
   expressServer: express.Express;
   apolloServer: ApolloServer<KeystoneContext>;
   httpServer: Server;
-}> => {
-  const expressServer = express();
-  const httpServer = createServer(expressServer);
+}> {
+  const expressApp = express();
+  const httpServer = createServer(expressApp);
 
   if (config.server?.cors) {
     // Setting config.server.cors = true will provide backwards compatible defaults
@@ -61,11 +53,16 @@ export const createExpressServer = async (
       typeof config.server.cors === 'boolean'
         ? { origin: true, credentials: true }
         : config.server.cors;
-    expressServer.use(cors(corsConfig));
+    expressApp.use(cors(corsConfig));
   }
 
+  expressApp.disable('etag');
+  expressApp.disable('x-powered-by');
+  expressApp.enable('case sensitive routing');
+  expressApp.enable('strict routing');
+
   if (config.server?.extendExpressApp) {
-    await config.server.extendExpressApp(expressServer, context);
+    await config.server.extendExpressApp(expressApp, context);
   }
 
   if (config.server?.extendHttpServer) {
@@ -75,7 +72,7 @@ export const createExpressServer = async (
   if (config.storage) {
     for (const val of Object.values(config.storage)) {
       if (val.kind !== 'local' || !val.serverRoute) continue;
-      expressServer.use(
+      expressApp.use(
         val.serverRoute.path,
         express.static(val.storagePath, {
           setHeaders(res) {
@@ -112,9 +109,9 @@ export const createExpressServer = async (
   const apolloServer = new ApolloServer({ ...serverConfig });
 
   const maxFileSize = config.server?.maxFileSize || DEFAULT_MAX_FILE_SIZE;
-  expressServer.use(graphqlUploadExpress({ maxFileSize }));
+  expressApp.use(graphqlUploadExpress({ maxFileSize }));
   await apolloServer.start();
-  expressServer.use(
+  expressApp.use(
     config.graphql?.path || '/api/graphql',
     json(config.graphql?.bodyParser),
     expressMiddleware(apolloServer, {
@@ -124,5 +121,5 @@ export const createExpressServer = async (
     })
   );
 
-  return { expressServer, apolloServer, httpServer };
+  return { expressServer: expressApp, apolloServer, httpServer };
 };
