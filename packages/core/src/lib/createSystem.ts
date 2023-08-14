@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import pLimit from 'p-limit';
-import type { FieldData, KeystoneConfig } from '../types';
+import type { FieldData, KeystoneConfig, } from '../types';
 
 import type { PrismaModule } from '../artifacts';
 import { allowAll } from '../access';
@@ -24,10 +24,6 @@ function getSudoGraphQLSchema(config: KeystoneConfig) {
   // The resulting schema is used as the GraphQL schema when calling `context.sudo()`.
   const transformedConfig: KeystoneConfig = {
     ...config,
-    ui: {
-      ...config.ui,
-      isAccessAllowed: allowAll,
-    },
     lists: Object.fromEntries(
       Object.entries(config.lists).map(([listKey, list]) => {
         return [

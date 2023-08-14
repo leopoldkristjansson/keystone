@@ -175,13 +175,7 @@ lists.RelatedToAll = list({
   ),
 });
 
-const config = testConfig({
-  lists,
-  ui: {
-    isAccessAllowed: () => true,
-  },
-});
-
+const config = testConfig({ lists });
 const introspectionQuery = `{
   __schema {
     types {

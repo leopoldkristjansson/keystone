@@ -1,7 +1,12 @@
-import type { KeystoneConfig } from '../types';
+import type { GraphQLSchema } from 'graphql';
+import type {
+  KeystoneContext,
+  KeystoneConfig,
+  __InternalKeystoneConfig
+} from '../types';
 import { idFieldType } from './id-field';
 
-function applyIdFieldDefaults(config: KeystoneConfig): KeystoneConfig['lists'] {
+function applyIdFieldDefaults(config: __InternalKeystoneConfig): __InternalKeystoneConfig['lists'] {
   // some error checking
   for (const [listKey, list] of Object.entries(config.lists)) {
     if (list.fields.id) {
@@ -45,7 +50,7 @@ function applyIdFieldDefaults(config: KeystoneConfig): KeystoneConfig['lists'] {
     listsWithIds[listKey] = {
       ...list,
       fields: {
-        id: idFieldType(list.db?.idField ?? config.db.idField ?? { kind: 'cuid' }, false),
+        id: idFieldType(list.db?.idField ?? config.db.idField, false),
         ...list.fields,
       },
     };
@@ -54,7 +59,12 @@ function applyIdFieldDefaults(config: KeystoneConfig): KeystoneConfig['lists'] {
   return listsWithIds;
 }
 
-export function initConfig(config: KeystoneConfig) {
+function defaultIsAccessAllowed({ session, sessionStrategy }: KeystoneContext) {
+  if (!sessionStrategy) return true;
+  return session !== undefined;
+}
+
+export function initConfig(config: KeystoneConfig): __InternalKeystoneConfig {
   if (!['postgresql', 'sqlite', 'mysql'].includes(config.db.provider)) {
     throw new TypeError(
       'Invalid db configuration. Please specify db.provider as either "sqlite", "postgresql" or "mysql"'
@@ -67,6 +77,52 @@ export function initConfig(config: KeystoneConfig) {
   // TODO: use zod or something if want to follow this path
   return {
     ...config,
+
+    db: {
+      shadowDatabaseUrl: '', // TODO: is this ok
+
+      idField: { kind: 'cuid' },
+      prismaClientPath: '@prisma/client',
+      extendPrismaSchema: (schema: string) => schema,
+
+      ...config.db,
+    },
+
+    graphql: {
+      playground: process.env.NODE_ENV !== 'production',
+      ...config?.graphql,
+    },
+
+    ui: {
+      isAccessAllowed: defaultIsAccessAllowed,
+      publicPages: [],
+      basePath: '',
+      ...config?.ui,
+    },
+
+    server: {
+      cors: false,
+      maxFileSize: 200 * 1024 * 1024, // 200 MiB
+      healthCheck: {}, // TODO: remove
+
+      extendExpressApp: async () => {},
+      extendHttpServer: async () => {},
+      ...config?.server,
+    },
+
+    storage: {
+      ...config?.storage
+    },
+
+    types: {
+      path: 'node_modules/.keystone/types.ts', // TODO: fix duplication of getSystemPaths
+      ...config?.types
+    },
+
+    onStartup: async () => {},
+    extendGraphqlSchema: (s: GraphQLSchema) => s,
+    telemetry: config?.telemetry ?? true,
+
     lists: applyIdFieldDefaults(config),
   };
 }

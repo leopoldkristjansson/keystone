@@ -104,6 +104,8 @@ export type KeystoneConfig<TypeInfo extends BaseKeystoneTypeInfo = BaseKeystoneT
     path?: string;
   };
 
+  onStartup?: (args: KeystoneContext<TypeInfo>) => MaybePromise<void>;
+
   // TODO: why isn't this within .graphql?
   extendGraphqlSchema?: (schema: GraphQLSchema) => GraphQLSchema;
   /** An object containing configuration about keystone's various external storages.
@@ -125,6 +127,13 @@ export type KeystoneConfig<TypeInfo extends BaseKeystoneTypeInfo = BaseKeystoneT
   };
 };
 
+// WARNING: for internal usage only, may disappear in patch
+export type __InternalKeystoneConfig <TypeInfo extends BaseKeystoneTypeInfo = BaseKeystoneTypeInfo> = {
+  [key in keyof Required<Omit<KeystoneConfig, 'session'>>]: Exclude<Required<KeystoneConfig[key]>, undefined>
+} & {
+  session?: KeystoneConfig['session']
+};
+
 // config.lists
 
 export type { ListSchemaConfig, ListConfig, BaseFields, MaybeSessionFunction, MaybeItemFunction };
@@ -144,7 +153,6 @@ export type DatabaseConfig<TypeInfo extends BaseKeystoneTypeInfo> = {
   url: string;
 
   shadowDatabaseUrl?: string;
-  onConnect?: (args: KeystoneContext<TypeInfo>) => Promise<void>;
   enableLogging?: boolean | PrismaLogLevel | Array<PrismaLogLevel | PrismaLogDefinition>;
   idField?: IdFieldConfig;
   prismaClientPath?: string;
@@ -193,8 +201,8 @@ export type AdminFileToWrite =
 
 // config.server
 export type ServerConfig<TypeInfo extends BaseKeystoneTypeInfo> = {
-  /** Configuration options for the cors middleware. Set to `true` to use core Keystone defaults */
-  cors?: CorsOptions | true;
+  /** Configuration options for the cors middleware */
+  cors?: boolean | CorsOptions;
   /** Maximum upload file size allowed (in bytes) */
   maxFileSize?: number;
 
@@ -210,14 +218,14 @@ export type ServerConfig<TypeInfo extends BaseKeystoneTypeInfo> = {
   extendExpressApp?: (
     app: express.Express,
     context: KeystoneContext<TypeInfo>
-  ) => void | Promise<void>;
+  ) => MaybePromise<void>;
 
   /** extend the node:http server used by Keystone */
   extendHttpServer?: (
     server: Server,
     context: KeystoneContext<TypeInfo>,
     graphqlSchema: GraphQLSchema
-  ) => void;
+  ) => MaybePromise<void>;
 } & (
   | {
       /** Port number to start the server on. Defaults to process.env.PORT || 3000 */

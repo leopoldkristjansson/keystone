@@ -2,31 +2,23 @@ import url from 'url';
 import path from 'path';
 import express from 'express';
 import type next from 'next';
-import type { KeystoneConfig, KeystoneContext } from '../../types';
+import type { KeystoneContext, __InternalKeystoneConfig } from '../../types';
 import { pkgDir } from '../../pkg-dir';
 
 const adminErrorHTMLFilepath = path.join(pkgDir, 'static', 'admin-error.html');
 
-function defaultIsAccessAllowed({ session, sessionStrategy }: KeystoneContext) {
-  if (!sessionStrategy) return true;
-  return session !== undefined;
-}
-
 export function createAdminUIMiddlewareWithNextApp(
-  config: KeystoneConfig,
+  config: __InternalKeystoneConfig,
   commonContext: KeystoneContext,
   nextApp: ReturnType<typeof next>
 ) {
   const handle = nextApp.getRequestHandler();
-
   const {
-    ui: {
-      isAccessAllowed = defaultIsAccessAllowed,
-      pageMiddleware,
-      publicPages = [],
-      basePath = '',
-    } = {},
-  } = config;
+    isAccessAllowed,
+    pageMiddleware,
+    publicPages,
+    basePath,
+  } = config.ui;
 
   if (basePath.endsWith('/')) throw new TypeError('basePath must not end with a trailing slash');
 
