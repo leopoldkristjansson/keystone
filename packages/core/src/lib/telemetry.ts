@@ -5,8 +5,9 @@ import fetch from 'node-fetch';
 import chalk from 'chalk';
 import { Configuration, Telemetry, Project, Device, PackageName } from '../types/telemetry';
 import { DatabaseProvider } from '../types';
-import { telemetryEndpoint as defaultTelemetryEndpoint } from './defaults';
 import type { InitialisedList } from './core/initialise-lists';
+
+const defaultTelemetryEndpoint = 'https://telemetry.keystonejs.com';
 
 const packageNames: PackageName[] = [
   '@keystone-6/core',
