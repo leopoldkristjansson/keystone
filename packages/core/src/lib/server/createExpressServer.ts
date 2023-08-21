@@ -107,11 +107,12 @@ export async function createExpressServer (
   } as ApolloServerOptions<KeystoneContext>);
 
   const maxFileSize = config.server?.maxFileSize || DEFAULT_MAX_FILE_SIZE;
-  expressApp.use(graphqlUploadExpress({ maxFileSize }));
   await apolloServer.start();
+
   expressApp.use(
-    config.graphql?.path || '/api/graphql',
+    config.graphql?.path ?? '/api/graphql',
     json(config.graphql?.bodyParser),
+    graphqlUploadExpress({ maxFileSize }),
     expressMiddleware(apolloServer, {
       context: async ({ req, res }) => {
         return await context.withRequest(req, res);
