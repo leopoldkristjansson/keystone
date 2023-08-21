@@ -90,7 +90,7 @@ export async function createExpressServer (
 
   const apolloConfig = config.graphql?.apolloConfig;
   const playgroundOption = config.graphql?.playground ?? process.env.NODE_ENV !== 'production';
-  const serverConfig = {
+  const apolloServer = new ApolloServer({
     formatError: formatError(config.graphql),
     includeStacktraceInErrorResponses: config.graphql?.debug, // If undefined, use Apollo default of NODE_ENV !== 'production'
     ...apolloConfig,
@@ -104,9 +104,7 @@ export async function createExpressServer (
               : ApolloServerPluginLandingPageDisabled(),
             ...(apolloConfig?.plugins || []),
           ],
-  } as ApolloServerOptions<KeystoneContext>;
-
-  const apolloServer = new ApolloServer({ ...serverConfig });
+  } as ApolloServerOptions<KeystoneContext>);
 
   const maxFileSize = config.server?.maxFileSize || DEFAULT_MAX_FILE_SIZE;
   expressApp.use(graphqlUploadExpress({ maxFileSize }));
