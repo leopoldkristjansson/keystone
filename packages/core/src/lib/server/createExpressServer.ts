@@ -58,8 +58,6 @@ export async function createExpressServer (
 
   expressApp.disable('etag');
   expressApp.disable('x-powered-by');
-  expressApp.enable('case sensitive routing');
-  expressApp.enable('strict routing');
 
   if (config.server?.extendExpressApp) {
     await config.server.extendExpressApp(expressApp, context);
