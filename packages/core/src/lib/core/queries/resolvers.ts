@@ -12,7 +12,7 @@ import {
 } from '../where-inputs';
 import { limitsExceededError, userInputError } from '../graphql-errors';
 import type { InitialisedList } from '../initialise-lists';
-import { getDBFieldKeyForFieldOnMultiField, runWithPrisma } from '../utils';
+import { getDBFieldKeyForFieldOnMultiField } from '../utils';
 import { checkFilterOrderAccess } from '../filter-order-access';
 
 // we want to put the value we get back from the field's unique where resolver into an equals
@@ -73,14 +73,10 @@ export async function findOne(
 ) {
   // check operation permission to pass into single operation
   const operationAccess = await getOperationAccess(list, context, 'query');
-  if (!operationAccess) {
-    return null;
-  }
+  if (!operationAccess) return null;
 
   const accessFilters = await getAccessFilters(list, context, 'query');
-  if (accessFilters === false) {
-    return null;
-  }
+  if (accessFilters === false) return null;
 
   // validate and resolve the input filter
   const uniqueWhere = await resolveUniqueWhereInput(args.where, list, context);
@@ -97,7 +93,7 @@ export async function findOne(
   // apply access control
   const filter = await accessControlledFilter(list, context, resolvedWhere, accessFilters);
 
-  return runWithPrisma(context, list, model => model.findFirst({ where: filter }));
+  return await context.prisma[list.listKey].findFirst({ where: filter });
 }
 
 export async function findMany(
@@ -116,14 +112,10 @@ export async function findMany(
   const orderBy = await resolveOrderBy(rawOrderBy, list, context);
 
   const operationAccess = await getOperationAccess(list, context, 'query');
-  if (!operationAccess) {
-    return [];
-  }
+  if (!operationAccess) return [];
 
   const accessFilters = await getAccessFilters(list, context, 'query');
-  if (accessFilters === false) {
-    return [];
-  }
+  if (accessFilters === false) return [];
 
   const resolvedWhere = await resolveWhereInput(where, list, context);
 
@@ -132,15 +124,13 @@ export async function findMany(
 
   const filter = await accessControlledFilter(list, context, resolvedWhere, accessFilters);
 
-  const results = await runWithPrisma(context, list, model =>
-    model.findMany({
-      where: extraFilter === undefined ? filter : { AND: [filter, extraFilter] },
-      orderBy,
-      take: take ?? undefined,
-      skip,
-      cursor: cursor ?? undefined,
-    })
-  );
+  const results = await context.prisma[list.listKey].findMany({
+    where: extraFilter === undefined ? filter : { AND: [filter, extraFilter] },
+    orderBy,
+    take: take ?? undefined,
+    skip,
+    cursor: cursor ?? undefined,
+  });
 
   if (list.cacheHint) {
     maybeCacheControlFromInfo(info)?.setCacheHint(
@@ -214,14 +204,10 @@ export async function count(
   extraFilter?: PrismaFilter
 ) {
   const operationAccess = await getOperationAccess(list, context, 'query');
-  if (!operationAccess) {
-    return 0;
-  }
+  if (!operationAccess) return 0;
 
   const accessFilters = await getAccessFilters(list, context, 'query');
-  if (accessFilters === false) {
-    return 0;
-  }
+  if (accessFilters === false) return 0;
 
   const resolvedWhere = await resolveWhereInput(where, list, context);
 
@@ -230,11 +216,10 @@ export async function count(
 
   const filter = await accessControlledFilter(list, context, resolvedWhere, accessFilters);
 
-  const count = await runWithPrisma(context, list, model =>
-    model.count({
-      where: extraFilter === undefined ? filter : { AND: [filter, extraFilter] },
-    })
-  );
+  const count = await context.prisma[list.listKey].count({
+    where: extraFilter === undefined ? filter : { AND: [filter, extraFilter] },
+  });
+
   if (list.cacheHint) {
     maybeCacheControlFromInfo(info)?.setCacheHint(
       list.cacheHint({

@@ -3,7 +3,6 @@ import { cannotForItem, getOperationAccess, getAccessFilters } from '../access-c
 import { checkFilterOrderAccess } from '../filter-order-access';
 import { accessDeniedError } from '../graphql-errors';
 import type { InitialisedList } from '../initialise-lists';
-import { runWithPrisma } from '../utils';
 import { InputFilter, resolveUniqueWhereInput, UniqueInputFilter } from '../where-inputs';
 import { getAccessControlledItemForDelete } from './access-control';
 import { runSideEffectOnlyHook } from './hooks';
@@ -34,22 +33,23 @@ async function deleteSingle(
     inputData: undefined,
   };
 
-  // Apply all validation checks
+  // Hooks
   await validateDelete({ list, hookArgs });
 
   // Before operation
   await runSideEffectOnlyHook(list, 'beforeOperation', hookArgs);
 
-  const newItem = await runWithPrisma(context, list, model =>
-    model.delete({ where: { id: item.id } })
-  );
+  // Operation
+  const result = await context.prisma[list.listKey].delete({ where: { id: item.id } });
+
+  // After operation
   await runSideEffectOnlyHook(list, 'afterOperation', {
     ...hookArgs,
     item: undefined,
     originalItem: item,
   });
 
-  return newItem;
+  return result;
 }
 
 export async function deleteMany(

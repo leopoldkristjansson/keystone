@@ -15,7 +15,7 @@ import { graphql } from '../../..';
 import { getOperationAccess, getAccessFilters } from '../access-control';
 import type { ResolvedDBField, ResolvedRelationDBField } from '../resolve-relationships';
 import type { InitialisedList } from '../initialise-lists';
-import { IdType, getDBFieldKeyForFieldOnMultiField, runWithPrisma } from '../utils';
+import { IdType, getDBFieldKeyForFieldOnMultiField } from '../utils';
 import { accessReturnError, extensionError } from '../graphql-errors';
 import { accessControlledFilter } from './resolvers';
 import * as queries from './resolvers';
@@ -117,13 +117,8 @@ async function fetchRelatedItems(
     accessFilters
   );
 
-  const results = await runWithPrisma(context, foreignList, model =>
-    model.findMany({
-      where: resolvedWhere,
-    })
-  );
-
-  const resultsById = new Map(results.map(x => [x[idFieldKey], x]));
+  const results = await context.prisma[foreignList.listKey].findMany({ where: resolvedWhere  });
+  const resultsById = new Map(results.map((x: any) => [x[idFieldKey], x]));
 
   return toFetch.map(id => resultsById.get(id));
 }
