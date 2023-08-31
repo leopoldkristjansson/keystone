@@ -1,6 +1,6 @@
 import { list, group } from '@keystone-6/core';
 import { allowAll, denyAll } from '@keystone-6/core/access';
-import { checkbox, text, timestamp } from '@keystone-6/core/fields';
+import { checkbox, text, timestamp, relationship } from '@keystone-6/core/fields';
 import type { Lists } from '.keystone/types';
 
 // WARNING: this example is for demonstration purposes only

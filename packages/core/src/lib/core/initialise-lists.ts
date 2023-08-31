@@ -2,12 +2,12 @@ import type { CacheHint } from '@apollo/cache-control-types';
 import { GraphQLString, isInputObjectType } from 'graphql';
 import { getGqlNames, QueryMode } from '../../types';
 import type {
+  __InternalKeystoneConfig,
   BaseItem,
   BaseListTypeInfo,
   CacheHintArgs,
   FindManyArgs,
   GraphQLTypesForList,
-  KeystoneConfig,
   ListGraphQLTypes,
   ListHooks,
   MaybePromise,
@@ -120,7 +120,7 @@ function throwIfNotAFilter(x: unknown, listKey: string, fieldKey: string) {
   );
 }
 
-function getIsEnabled(listsConfig: KeystoneConfig['lists']) {
+function getIsEnabled(listsConfig: __InternalKeystoneConfig['lists']) {
   const isEnabled: Record<string, IsEnabled> = {};
 
   for (const [listKey, listConfig] of Object.entries(listsConfig)) {
@@ -224,7 +224,7 @@ function parseFieldHooks(
 type PartiallyInitialisedList = Omit<InitialisedList, 'lists' | 'resolvedDbFields'>;
 
 function getListsWithInitialisedFields(
-  { storage: configStorage, lists: listsConfig, db: { provider } }: KeystoneConfig,
+  { storage: configStorage, lists: listsConfig, db: { provider } }: __InternalKeystoneConfig,
   listGraphqlTypes: Record<string, ListGraphQLTypes>,
   intermediateLists: Record<string, { graphql: { isEnabled: IsEnabled } }>
 ) {
@@ -451,7 +451,7 @@ function graphqlForOutputField(field: InitialisedField) {
 }
 
 function getListGraphqlTypes(
-  listsConfig: KeystoneConfig['lists'],
+  listsConfig: __InternalKeystoneConfig['lists'],
   lists: Record<string, InitialisedList>,
   intermediateLists: Record<string, { graphql: { isEnabled: IsEnabled } }>
 ): Record<string, ListGraphQLTypes> {
@@ -716,7 +716,7 @@ function getListGraphqlTypes(
  * 5. Handle relationships - ensure correct linking between two sides of all relationships (including one-sided relationships)
  * 6.
  */
-export function initialiseLists(config: KeystoneConfig): Record<string, InitialisedList> {
+export function initialiseLists(config: __InternalKeystoneConfig): Record<string, InitialisedList> {
   const listsConfig = config.lists;
 
   let intermediateLists;

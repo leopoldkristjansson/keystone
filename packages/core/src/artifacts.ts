@@ -125,7 +125,7 @@ export function getSystemPaths(cwd: string, config: __InternalKeystoneConfig) {
 
 export async function validatePrismaAndGraphQLSchemas(
   cwd: string,
-  config: KeystoneConfig,
+  config: __InternalKeystoneConfig,
   graphQLSchema: GraphQLSchema
 ) {
   const paths = getSystemPaths(cwd, config);
@@ -159,7 +159,7 @@ export async function validatePrismaAndGraphQLSchemas(
 
 export async function generatePrismaAndGraphQLSchemas(
   cwd: string,
-  config: KeystoneConfig,
+  config: __InternalKeystoneConfig,
   graphQLSchema: GraphQLSchema
 ) {
   const paths = getSystemPaths(cwd, config);
@@ -174,7 +174,7 @@ export async function generatePrismaAndGraphQLSchemas(
 
 export async function generateTypescriptTypes(
   cwd: string,
-  config: KeystoneConfig,
+  config: __InternalKeystoneConfig,
   graphQLSchema: GraphQLSchema
 ) {
   const lists = initialiseLists(config);
@@ -187,7 +187,7 @@ export async function generateTypescriptTypes(
 
 export async function generateTypescriptTypesAndPrisma(
   cwd: string,
-  config: KeystoneConfig,
+  config: __InternalKeystoneConfig,
   graphQLSchema: GraphQLSchema
 ) {
   const paths = getSystemPaths(cwd, config);

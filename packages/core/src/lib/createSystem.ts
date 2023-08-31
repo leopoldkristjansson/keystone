@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import pLimit from 'p-limit';
-import type { FieldData, KeystoneConfig, } from '../types';
+import type { FieldData, __InternalKeystoneConfig } from '../types';
 
 import type { PrismaModule } from '../artifacts';
 import { allowAll } from '../access';
@@ -93,7 +93,7 @@ function injectNewDefaults(prismaClient: any, lists: Record<string, InitialisedL
   return prismaClient;
 }
 
-export function createSystem(config: KeystoneConfig) {
+export function createSystem(config: __InternalKeystoneConfig) {
   const lists = initialiseLists(config);
   const adminMeta = createAdminMeta(config, lists);
   const graphQLSchema = createGraphQLSchema(config, lists, adminMeta, false);

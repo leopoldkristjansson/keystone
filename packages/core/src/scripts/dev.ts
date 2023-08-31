@@ -23,7 +23,7 @@ import {
   getBuiltKeystoneConfiguration,
   getSystemPaths,
 } from '../artifacts';
-import type { KeystoneConfig } from '../types';
+import type { __InternalKeystoneConfig } from '../types';
 import { initialiseLists } from '../lib/core/initialise-lists';
 import { printPrismaSchema } from '../lib/core/prisma-schema-printer';
 import type { AdminMetaRootVal } from '../lib/create-admin-meta';
@@ -33,13 +33,14 @@ import type { Flags } from './cli';
 
 const devLoadingHTMLFilepath = path.join(pkgDir, 'static', 'dev-loading.html');
 
-function stripExtendHttpServer(config: KeystoneConfig): KeystoneConfig {
-  const { server, ...rest } = config;
-  if (server) {
-    const { extendHttpServer, ...restServer } = server;
-    return { ...rest, server: restServer };
-  }
-  return rest;
+function stripExtendHttpServer(config: __InternalKeystoneConfig): __InternalKeystoneConfig {
+  return {
+    ...config,
+    server: {
+      ...config.server,
+      extendExpressApp: async () => {}, // effectively removed
+    }
+  };
 }
 
 function resolvablePromise<T>() {
