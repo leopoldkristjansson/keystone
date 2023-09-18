@@ -117,7 +117,7 @@ async function fetchRelatedItems(
     accessFilters
   );
 
-  const results = await context.prisma[foreignList.listKey].findMany({ where: resolvedWhere  });
+  const results = await context.prisma[foreignList.listKey].findMany({ where: resolvedWhere });
   const resultsById = new Map(results.map((x: any) => [x[idFieldKey], x]));
 
   return toFetch.map(id => resultsById.get(id));

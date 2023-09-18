@@ -137,7 +137,7 @@ async function updateSingle(
 
   const updatedItem = await context.prisma[list.listKey].update({
     where: { id: item.id },
-    data
+    data,
   });
 
   // After Operation
