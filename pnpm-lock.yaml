@@ -2038,9 +2038,6 @@ importers:
       node-fetch:
         specifier: ^2.6.7
         version: 2.6.7
-      p-limit:
-        specifier: ^2.3.0
-        version: 2.3.0
       pluralize:
         specifier: ^8.0.0
         version: 8.0.0
