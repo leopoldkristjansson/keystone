@@ -9,9 +9,9 @@ import { localImageAssetsAPI } from './local';
 import { s3ImageAssetsAPI } from './s3';
 import { streamToBuffer } from './utils';
 
-function defaultTransformName (path: string) {
+function defaultTransformName(path: string) {
   return randomBytes(12).toString('base64url').slice(0, 12);
-};
+}
 
 async function getImageMetadataFromBuffer(buffer: Buffer) {
   const fileType = await fileTypeFromBuffer(buffer);

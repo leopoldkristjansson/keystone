@@ -6,7 +6,7 @@ import { s3FileAssetsAPI } from './s3';
 import type { FileAdapter } from './types';
 
 // appends a random identifier to the filename so that people can't brute-force guess stored filenames
-function defaultTransformName (path: string) {
+function defaultTransformName(path: string) {
   // this regex lazily matches for any characters that aren't a new line
   // it then optionally matches the last instance of a "." symbol
   // followed by any alphanumerical character before the end of the string
@@ -17,7 +17,7 @@ function defaultTransformName (path: string) {
   const urlSafeName = name.replace(/[^A-Za-z0-9]/g, '-');
   if (ext) return `${urlSafeName}-${id}${ext}`;
   return `${urlSafeName}-${id}`;
-};
+}
 
 export function createFilesContext(config: KeystoneConfig): FilesContext {
   const adaptersMap = new Map<string, FileAdapter>();
