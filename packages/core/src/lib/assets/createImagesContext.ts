@@ -1,5 +1,7 @@
 import { v4 as uuid } from 'uuid';
+import { fileTypeFromBuffer } from 'file-type';
 import imageSize from 'image-size';
+
 import type { KeystoneConfig, ImagesContext } from '../../types';
 import type { ImageAdapter } from './types';
 import { localImageAssetsAPI } from './local';
@@ -7,7 +9,7 @@ import { s3ImageAssetsAPI } from './s3';
 import { streamToBuffer } from './utils';
 
 async function getImageMetadataFromBuffer(buffer: Buffer) {
-  const fileType = await (await import('file-type')).fileTypeFromBuffer(buffer);
+  const fileType = await fileTypeFromBuffer(buffer);
   if (!fileType) {
     throw new Error('File type not found');
   }
