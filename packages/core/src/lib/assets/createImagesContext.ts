@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 
-import { fileTypeFromBuffer } from 'file-type';
+// TODO: import { fileTypeFromBuffer } from 'file-type';
 import imageSize from 'image-size';
 
 import type { KeystoneConfig, ImagesContext } from '../../types';
@@ -14,7 +14,8 @@ function defaultTransformName(path: string) {
 }
 
 async function getImageMetadataFromBuffer(buffer: Buffer) {
-  const fileType = await fileTypeFromBuffer(buffer);
+  // TODO: const fileType = await fileTypeFromBuffer(buffer);
+  const fileType = await (await import('file-type')).fileTypeFromBuffer(buffer);
   if (!fileType) {
     throw new Error('File type not found');
   }
