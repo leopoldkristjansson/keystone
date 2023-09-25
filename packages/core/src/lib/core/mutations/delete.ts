@@ -6,8 +6,7 @@ import type { InitialisedList } from '../initialise-lists';
 import { getWriteLimit, runWithPrisma } from '../utils';
 import { InputFilter, resolveUniqueWhereInput, UniqueInputFilter } from '../where-inputs';
 import { getAccessControlledItemForDelete } from './access-control';
-import { runSideEffectOnlyHook } from './hooks';
-import { validateDelete } from './validation';
+import { validateList, validateFields } from './validation';
 
 async function deleteSingle(
   uniqueInput: UniqueInputFilter,
@@ -24,7 +23,6 @@ async function deleteSingle(
 
   // Filter and Item access control. Will throw an accessDeniedError if not allowed.
   const item = await getAccessControlledItemForDelete(list, context, uniqueWhere, accessFilters);
-
   const hookArgs = {
     operation: 'delete' as const,
     listKey: list.listKey,
@@ -34,11 +32,19 @@ async function deleteSingle(
     inputData: undefined,
   };
 
-  // Apply all validation checks
-  await validateDelete({ list, hookArgs });
+  // validate field hooks
+  await validateFields({ list, hookArgs, operation: 'delete' });
 
-  // Before operation
-  await runSideEffectOnlyHook(list, 'beforeOperation', hookArgs);
+  // validate list hooks // TODO: why isn't this first
+  await validateList({ list, hookArgs, operation: 'delete' });
+
+  // beforeOperation list hook
+  await list.hooks.beforeOperation.delete(hookArgs);
+
+  // beforeOperation field hooks
+  for (const fieldKey in list.fields) {
+    await list.fields[fieldKey].hooks.beforeOperation?.({ ...hookArgs, fieldKey });
+  }
 
   const writeLimit = getWriteLimit(context);
 
@@ -46,11 +52,22 @@ async function deleteSingle(
     runWithPrisma(context, list, model => model.delete({ where: { id: item.id } }))
   );
 
-  await runSideEffectOnlyHook(list, 'afterOperation', {
+  // afterOperation list hook
+  await list.hooks.afterOperation.delete({
     ...hookArgs,
     item: undefined,
     originalItem: item,
   });
+
+  // afterOperation field hooks
+  for (const fieldKey in list.fields) {
+    await list.fields[fieldKey].hooks.afterOperation?.({
+      ...hookArgs,
+      fieldKey,
+      item: undefined,
+      originalItem: item,
+    });
+  }
 
   return newItem;
 }

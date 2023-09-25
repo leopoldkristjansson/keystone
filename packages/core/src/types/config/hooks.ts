@@ -89,8 +89,11 @@ export type ResolvedListHooks<ListTypeInfo extends BaseListTypeInfo> = {
     create: ResolveInputListHook<ListTypeInfo, 'create'>;
     update: ResolveInputListHook<ListTypeInfo, 'update'>;
   };
-  validateInput: ValidateHook<ListTypeInfo, 'create' | 'update'>;
-  validateDelete: ValidateHook<ListTypeInfo, 'delete'>;
+  validate: {
+    create: ValidateHook<ListTypeInfo, 'create'>;
+    update: ValidateHook<ListTypeInfo, 'update'>;
+    delete: ValidateHook<ListTypeInfo, 'delete'>;
+  }
   beforeOperation: {
     create: BeforeOperationListHook<ListTypeInfo, 'create'>;
     update: BeforeOperationListHook<ListTypeInfo, 'update'>;

@@ -206,6 +206,14 @@ function parseListHooksBeforeOperation(f: ListHooks<BaseListTypeInfo>['beforeOpe
   return { create, update, delete: _delete };
 }
 
+function parseListHooksValidateInput(h: ListHooks<BaseListTypeInfo>) {
+  return {
+    create: h.validateInput ?? defaultOperationHook,
+    update: h.validateInput ?? defaultOperationHook,
+    delete: h.validateDelete ?? defaultOperationHook
+  };
+}
+
 function parseListHooksAfterOperation(f: ListHooks<BaseListTypeInfo>['afterOperation']) {
   if (typeof f === 'function') {
     return {
@@ -236,8 +244,7 @@ function defaultFieldHooksResolveInput({
 function parseListHooks(hooks: ListHooks<BaseListTypeInfo>): ResolvedListHooks<BaseListTypeInfo> {
   return {
     resolveInput: parseListHooksResolveInput(hooks.resolveInput),
-    validateInput: hooks.validateInput ?? defaultOperationHook,
-    validateDelete: hooks.validateDelete ?? defaultOperationHook,
+    validate: parseListHooksValidateInput(hooks),
     beforeOperation: parseListHooksBeforeOperation(hooks.beforeOperation),
     afterOperation: parseListHooksAfterOperation(hooks.afterOperation),
   };
