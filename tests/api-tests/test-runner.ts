@@ -42,9 +42,17 @@ const generatedPrismaModules = new Map<string, PrismaModule>();
 // we're okay with that because otherwise the performance of our tests is very bad
 const tmpdir = os.tmpdir();
 
-const prismaSchemaDirectory = path.join(tmpdir, Math.random().toString(36).slice(2));
+const prismaSchemaDirectories: string[] = [];
 
-const prismaSchemaPath = path.join(prismaSchemaDirectory, 'schema.prisma');
+const genPrismaSchemaDirectory = (id: string) => {
+  const directory = path.join(tmpdir, id);
+  prismaSchemaDirectories.push(directory);
+
+  return directory;
+};
+
+const genPrismaSchemaPath = (prismaSchemaDirectory: string) =>
+  path.join(prismaSchemaDirectory, 'schema.prisma');
 
 const prismaEnginesDir = path.dirname(require.resolve('@prisma/engines/package.json'));
 
@@ -58,7 +66,10 @@ if (!queryEngineFilename) {
 
 process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(prismaEnginesDir, queryEngineFilename);
 
-async function getTestPrismaModule(schema: string): Promise<PrismaModule> {
+async function getTestPrismaModule(
+  schema: string,
+  prismaSchemaDirectory: string
+): Promise<PrismaModule> {
   if (generatedPrismaModules.has(schema)) {
     return generatedPrismaModules.get(schema)!;
   }
@@ -95,12 +106,18 @@ async function getTestPrismaModule(schema: string): Promise<PrismaModule> {
 }
 
 afterAll(async () => {
-  await fs.rm(prismaSchemaDirectory, { recursive: true, force: true });
+  for (const directory of prismaSchemaDirectories) {
+    await fs.rm(directory, { recursive: true, force: true });
+  }
 });
 
 let hasCreatedDatabase = false;
 
-async function pushSchemaToDatabase(schema: string) {
+async function pushSchemaToDatabase(
+  schema: string,
+  prismaSchemaDirectory: string,
+  prismaSchemaPath: string
+) {
   if (dbProvider === 'sqlite') {
     // touch the file (or truncate it), easiest way to start from scratch
     await fs.writeFile(path.join(prismaSchemaDirectory, SQLITE_DATABASE_FILENAME), '');
@@ -133,10 +150,12 @@ async function pushSchemaToDatabase(schema: string) {
 
 let lastWrittenSchema = '';
 
-export async function setupTestEnv<TypeInfo extends BaseKeystoneTypeInfo>({
+export async function setupTestEnv<TypeInfo extends BaseKeystoneTypeInfo & { id: string }>({
   config: _config,
+  id,
 }: {
   config: KeystoneConfig<TypeInfo>;
+  id: string;
 }): Promise<TestEnv<TypeInfo>> {
   // Force the UI to always be disabled.
   const config = initConfig({
@@ -147,15 +166,20 @@ export async function setupTestEnv<TypeInfo extends BaseKeystoneTypeInfo>({
   const { graphQLSchema, getKeystone } = createSystem(config);
   const artifacts = await getCommittedArtifacts(config, graphQLSchema);
 
+  const prismaSchemaDirectory = genPrismaSchemaDirectory(id);
+  const prismaSchemaPath = genPrismaSchemaPath(prismaSchemaDirectory);
+
   if (lastWrittenSchema !== artifacts.prisma) {
     if (!lastWrittenSchema) {
       await fs.mkdir(prismaSchemaDirectory, { recursive: true });
     }
     await fs.writeFile(prismaSchemaPath, artifacts.prisma);
   }
-  await pushSchemaToDatabase(artifacts.prisma);
+  await pushSchemaToDatabase(artifacts.prisma, prismaSchemaDirectory, prismaSchemaPath);
 
-  const { connect, disconnect, context } = getKeystone(await getTestPrismaModule(artifacts.prisma));
+  const { connect, disconnect, context } = getKeystone(
+    await getTestPrismaModule(artifacts.prisma, prismaSchemaDirectory)
+  );
   return {
     connect,
     disconnect,
@@ -171,9 +195,9 @@ export function setupTestRunner<TypeInfo extends BaseKeystoneTypeInfo>({
 }: {
   config: KeystoneConfig<TypeInfo>;
 }) {
-  return (testFn: (testArgs: TestArgs<TypeInfo>) => Promise<void>) => async () => {
+  return (testFn: (testArgs: TestArgs<TypeInfo>) => Promise<void>, id: string) => async () => {
     // Reset the database to be empty for every test.
-    const { connect, disconnect, testArgs } = await setupTestEnv({ config });
+    const { connect, disconnect, testArgs } = await setupTestEnv({ config, id });
     await connect();
 
     try {
@@ -183,3 +207,5 @@ export function setupTestRunner<TypeInfo extends BaseKeystoneTypeInfo>({
     }
   };
 }
+
+export const genDbId = () => Math.random().toString(36).slice(2);

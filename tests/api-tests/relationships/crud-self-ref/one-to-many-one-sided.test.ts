@@ -1,7 +1,7 @@
 import { gen, sampleOne } from 'testcheck';
 import { text, relationship } from '@keystone-6/core/fields';
 import { list } from '@keystone-6/core';
-import { setupTestRunner } from '@keystone-6/api-tests/test-runner';
+import { genDbId, setupTestRunner } from '@keystone-6/api-tests/test-runner';
 import type { KeystoneContext } from '@keystone-6/core/types';
 import { allowAll } from '@keystone-6/core/access';
 import { testConfig, ContextFromRunner } from '../../utils';
@@ -111,7 +111,7 @@ describe(`One-to-many relationships`, () => {
             expect(users.length).toEqual(count);
           })
         );
-      })
+      }, genDbId())
     );
     test(
       'is null',
@@ -119,7 +119,7 @@ describe(`One-to-many relationships`, () => {
         await createComplexData(context);
         const users = await context.query.User.findMany({ where: { friend: null } });
         expect(users.length).toEqual(5);
-      })
+      }, genDbId())
     );
     test(
       'is not null',
@@ -127,7 +127,7 @@ describe(`One-to-many relationships`, () => {
         await createComplexData(context);
         const users = await context.query.User.findMany({ where: { NOT: { friend: null } } });
         expect(users.length).toEqual(4);
-      })
+      }, genDbId())
     );
   });
 
@@ -138,7 +138,7 @@ describe(`One-to-many relationships`, () => {
         await createInitialData(context);
         const count = await context.query.User.count();
         expect(count).toEqual(3);
-      })
+      }, genDbId())
     );
   });
 
@@ -158,7 +158,7 @@ describe(`One-to-many relationships`, () => {
         const { User, Friend } = await getUserAndFriend(context, _user.id, user.id);
         // Everything should now be connected
         expect(User.friend.id.toString()).toBe(Friend.id.toString());
-      })
+      }, genDbId())
     );
 
     test(
@@ -174,7 +174,7 @@ describe(`One-to-many relationships`, () => {
 
         // Everything should now be connected
         expect(User.friend.id.toString()).toBe(Friend.id.toString());
-      })
+      }, genDbId())
     );
 
     test(
@@ -187,7 +187,7 @@ describe(`One-to-many relationships`, () => {
 
         // Friend should be empty
         expect(user.friend).toBe(null);
-      })
+      }, genDbId())
     );
   });
 
@@ -211,7 +211,7 @@ describe(`One-to-many relationships`, () => {
         const { User, Friend } = await getUserAndFriend(context, user.id, friend.id);
         // Everything should now be connected
         expect(User.friend.id.toString()).toBe(Friend.id.toString());
-      })
+      }, genDbId())
     );
 
     test(
@@ -230,7 +230,7 @@ describe(`One-to-many relationships`, () => {
 
         // Everything should now be connected
         expect(User.friend.id.toString()).toBe(Friend.id.toString());
-      })
+      }, genDbId())
     );
 
     test(
@@ -251,7 +251,7 @@ describe(`One-to-many relationships`, () => {
         // Check the link has been broken
         const result = await getUserAndFriend(context, user.id, friend.id);
         expect(result.User.friend).toBe(null);
-      })
+      }, genDbId())
     );
 
     test(
@@ -271,7 +271,7 @@ describe(`One-to-many relationships`, () => {
         expect(_user.id).toEqual(user.id);
         expect(_user.friend).not.toBe(null);
         expect(_user.friend.id).toEqual(friend.id);
-      })
+      }, genDbId())
     );
   });
 
@@ -289,7 +289,7 @@ describe(`One-to-many relationships`, () => {
         // Check the link has been broken
         const result = await getUserAndFriend(context, user.id, friend.id);
         expect(result.User).toBe(null);
-      })
+      }, genDbId())
     );
 
     ['A', 'B', 'C', 'D', 'E'].forEach(name => {
@@ -345,7 +345,7 @@ describe(`One-to-many relationships`, () => {
             expect(friends[2].name).toEqual('C1');
             expect(friends[3].name).toEqual('D1');
           })();
-        })
+        }, genDbId())
       );
     });
 
@@ -408,7 +408,7 @@ describe(`One-to-many relationships`, () => {
             expect(friends[1].name).toEqual(expected[1]);
             expect(friends[2].name).toEqual(expected[2]);
           })();
-        })
+        }, genDbId())
       );
     });
   });
