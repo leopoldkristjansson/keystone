@@ -3,7 +3,6 @@
   "description": "An example nextjs frontend",
   "version": "0.1.0",
   "private": true,
-  "repository": "https://github.com/keystonejs/keystone/tree/main/examples/framework-nextjs-two-servers/nextjs-frontend",
   "scripts": {
     "dev": "next dev --port 8000",
     "build": "next build",
@@ -13,7 +12,7 @@
   "dependencies": {
     "@keystone-6/document-renderer": "^1.1.0",
     "@preconstruct/next": "^4.0.0",
-    "graphql": "^16.6.0",
+    "graphql": "^16.8.1",
     "next": "^13.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

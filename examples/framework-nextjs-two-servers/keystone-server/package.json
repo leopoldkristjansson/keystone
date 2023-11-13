@@ -3,7 +3,6 @@
   "description": "An example of a Keystone backend API server",
   "version": "0.0.5",
   "private": true,
-  "repository": "https://github.com/keystonejs/keystone/tree/main/examples/framework-nextjs-two-servers/keystone-server",
   "scripts": {
     "dev": "keystone dev --seed-database",
     "start": "keystone start --seed-database",
@@ -12,7 +11,7 @@
   },
   "dependencies": {
     "@keystone-6/auth": "^7.0.0",
-    "@keystone-6/core": "^5.2.0",
+    "@keystone-6/core": "^5.7.0",
     "@keystone-6/fields-document": "^8.0.0",
     "@prisma/client": "^4.16.2"
   },

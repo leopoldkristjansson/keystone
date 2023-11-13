@@ -92,9 +92,7 @@ export const relationship =
     const [foreignListKey, foreignFieldKey] = ref.split('.');
     const foreignList = lists[foreignListKey];
     if (!foreignList) {
-      throw new Error(
-        `Unable to resolve list '${foreignListKey}' for field ${listKey}.${fieldKey}`
-      );
+      throw new Error(`${listKey}.${fieldKey} points to ${ref}, but ${ref} doesn't exist`);
     }
     const foreignListTypes = foreignList.types;
 
@@ -137,7 +135,7 @@ export const relationship =
 
         const hideCreate = config.ui?.hideCreate ?? false;
         const refLabelField: typeof foreignFieldKey = foreignListMeta.labelField;
-        const refSearchFields: typeof foreignFieldKey[] = foreignListMeta.fields
+        const refSearchFields: (typeof foreignFieldKey)[] = foreignListMeta.fields
           .filter(x => x.search)
           .map(x => x.key);
 
